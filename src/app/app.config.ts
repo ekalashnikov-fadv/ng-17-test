@@ -4,6 +4,7 @@ import {provideHttpClient} from "@angular/common/http";
 
 import {routes} from './app.routes';
 import {environment} from "../environments/environment";
+import {TimeStore} from "./app.store";
 
 export const APP_CONFIG = new InjectionToken('App Config');
 
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
       provide: APP_CONFIG,
       useValue: environment,
     },
-    provideHttpClient()
+    provideHttpClient(),
+    TimeStore
   ]
 };

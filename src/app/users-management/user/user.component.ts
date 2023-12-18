@@ -8,6 +8,7 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import {UsersStore} from "../users-management.store";
 import {User} from "../users-management.interface";
 import {UserActivityComponent} from "../../user-activity/user-activity.component";
+import { TimeStore } from '../../app.store';
 
 @Component({
   selector: 'app-user',
@@ -25,10 +26,10 @@ import {UserActivityComponent} from "../../user-activity/user-activity.component
 export class UserComponent implements OnInit {
   private readonly injector = inject(Injector)
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly timeStore = inject(TimeStore);
 
   private userId: number | undefined
-
-  private readonly route = inject(ActivatedRoute);
 
   readonly store = inject(UsersStore);
 
@@ -36,6 +37,8 @@ export class UserComponent implements OnInit {
 
   readonly isLoading = this.store.loading;
   readonly isLoaded = this.store.loaded;
+
+  readonly $currentTime: Signal<Date> = this.timeStore.time.currentTime;
 
   form = new FormGroup({
     name: new FormControl('', {

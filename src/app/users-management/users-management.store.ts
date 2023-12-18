@@ -26,107 +26,111 @@ type State = {
   error: HttpErrorResponse | null;
 };
 
-const withUsersFeature = () => {
-  return signalStoreFeature
-  (
-    {
-      state: type<{
-        entityMap: EntityMap<User>,
-        ids: EntityId[],
-      }>(),
-      signals: type<{
-        entities: Signal<User[]>
-      }>(),
-      methods: {}
+const withUsersFeature = () => signalStoreFeature
+(
+  {
+    state: type<{
+      entityMap: EntityMap<User>,
+      ids: EntityId[],
+    }>(),
+    signals: type<{
+      entities: Signal<User[]>
+    }>(),
+    methods: {}
+  },
+  withState<State>({
+    selectedId: '',
+    loading: false,
+    loaded: false,
+    error: null
+  }),
+  withComputed(({selectedId, entities}) => ({
+    selectedUser: computed(() => entities().find(user => selectedId() === user.id)),
+    allUsers: computed(() => entities())
+  })),
+  withMethods((store, usersService = inject(UsersService)) => ({
+    selectUser(selectedId: string): void {
+      patchState(store, {selectedId});
     },
-    withState<State>({
-      selectedId: '',
-      loading: false,
-      loaded: false,
-      error: null
-    }),
-    withComputed(({selectedId, entities}) => ({
-      selectedUser: computed(() => entities().find(user => selectedId() === user.id)),
-      allUsers: computed(() => entities())
-    })),
-    withMethods((store, usersService = inject(UsersService)) => ({
-      selectUser(selectedId: string): void {
-        patchState(store, {selectedId});
-      },
-      loadUser$: rxMethod<string>(
-        pipe(
-          tap(() => patchState(store, {loading: true, loaded: false})),
-          switchMap((id) =>
-            usersService.loadUser$(id).pipe(
-              tapResponse({
-                next: (user) => {
-                  console.log(`loadUser$ >> user: `, user);
-                  patchState(store,
-                    setEntity(user),
-                    {selectedId: user.id},
-                    {loaded: true}
-                  );
-                },
-                error: (error: HttpErrorResponse) => {
-                  console.error(error);
-                  patchState(store, {error})
-                },
-                finalize: () => patchState(store, {loading: false}),
-              }),
-            ),
+    loadUser$: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, {loading: true, loaded: false})),
+        switchMap((id) =>
+          usersService.loadUser$(id).pipe(
+            tapResponse({
+              next: (user) => {
+                patchState(store,
+                  setEntity(user),
+                  {selectedId: user.id},
+                  {loaded: true}
+                );
+              },
+              error: (error: HttpErrorResponse) => {
+                console.error(error);
+                patchState(store, {error})
+              },
+              finalize: () => patchState(store, {loading: false}),
+            }),
           ),
-        )
-      ),
-      loadAll$: rxMethod<void>(
-        pipe(
-          tap(() => patchState(store, {loading: true})),
-          switchMap(() =>
-            usersService.loadAll$().pipe(
-              tapResponse({
-                next: (users) => {
-                  patchState(store, setAllEntities(users), {loaded: true})
-                },
-                error: (error: HttpErrorResponse) => {
-                  console.error(error);
-                  patchState(store, {error})
-                },
-                finalize: () => patchState(store, {loading: false}),
-              }),
-            ),
-          ),
-        )
-      ),
-      putUser$: rxMethod<User>(
-        pipe(
-          tap(() => patchState(store, {loading: true})),
-          switchMap((user) =>
-            usersService.putUser$(user).pipe(
-              tapResponse({
-                next: (user) => {
-                  patchState(store, updateEntity({id: user.id, changes: user}))
-                },
-                error: (error: HttpErrorResponse) => {
-                  console.error(error);
-                  patchState(store, {error})
-                },
-                finalize: () => patchState(store, {loading: false}),
-              }),
-            ),
-          ),
-        )
+        ),
       )
-    })),
-    withHooks({
-      onInit: (usersStore) => {
-        console.log(`onInit >> `, usersStore)
-      },
-    })
-  )
-}
+    ),
+    loadAll$: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, {loading: true})),
+        switchMap(() =>
+          usersService.loadAll$().pipe(
+            tapResponse({
+              next: (users) => {
+                patchState(store, setAllEntities(users), {loaded: true})
+              },
+              error: (error: HttpErrorResponse) => {
+                console.error(error);
+                patchState(store, {error})
+              },
+              finalize: () => patchState(store, {loading: false}),
+            }),
+          ),
+        ),
+      )
+    ),
+    putUser$: rxMethod<User>(
+      pipe(
+        tap(() => patchState(store, {loading: true})),
+        switchMap((user) =>
+          usersService.putUser$(user).pipe(
+            tapResponse({
+              next: (user) => {
+                patchState(store, updateEntity({id: user.id, changes: user}))
+              },
+              error: (error: HttpErrorResponse) => {
+                console.error(error);
+                patchState(store, {error})
+              },
+              finalize: () => patchState(store, {loading: false}),
+            }),
+          ),
+        ),
+      )
+    )
+  })),
+  withHooks({
+    onInit: (usersStore) => {
+      console.log(`Users store onInit >> `, usersStore)
+    },
+    onDestroy: (usersStore) => {
+      console.log(`Users store onDestroy >> `, usersStore)
+    },
+  })
+)
 
 @Injectable({providedIn: 'root'})
 export class UsersStore extends signalStore(
   withEntities<User>(),
   withUsersFeature()
 ) {
+
+  loadAll() {
+    this.loadAll$();
+  }
 }

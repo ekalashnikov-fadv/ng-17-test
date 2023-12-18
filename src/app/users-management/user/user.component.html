@@ -5,8 +5,9 @@
   } @else {
     <ng-container *ngTemplateOutlet="userForm"/>
 
-    @defer (on timer(10000ms)) {
-      <app-user-activity/>
+    @defer (on timer(5000ms)) {
+      <app-user-activity [time]="$currentTime()"/>
+<!--      <app-user-activity/>-->
     } @placeholder (minimum 500ms) {
       <p>User activity placeholder...</p>
     } @loading (after 100ms; minimum 1s) {
