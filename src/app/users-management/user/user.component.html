@@ -1,0 +1,28 @@
+<h1>User</h1>
+<section>
+  @if (isLoading() && !isLoaded()) {
+    <p>Loading...</p>
+  } @else {
+    <ng-container *ngTemplateOutlet="userForm"/>
+
+    @defer (on timer(10000ms)) {
+      <app-user-activity/>
+    } @placeholder (minimum 500ms) {
+      <p>User activity placeholder...</p>
+    } @loading (after 100ms; minimum 1s) {
+      <p>User activity loading...</p>
+    } @error {
+      <p>Failed to load user activity</p>
+    }
+  }
+</section>
+
+<ng-template #userForm>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-field">
+      <label for="name">Name</label>
+      <input formControlName="name" type="text" id="name" placeholder="Enter name">
+    </div>
+    <button type="submit" style="margin: 2vh 0">Save</button>
+  </form>
+</ng-template>
