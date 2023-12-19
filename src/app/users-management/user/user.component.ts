@@ -33,7 +33,6 @@ export class UserComponent implements OnInit {
   private userId: number | undefined
 
   readonly users: Signal<User[]> = this.store.entities;
-
   readonly isLoading = this.store.loading;
   readonly isLoaded = this.store.loaded;
 

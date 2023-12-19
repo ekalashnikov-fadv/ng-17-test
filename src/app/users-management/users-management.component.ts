@@ -47,12 +47,12 @@ export class UsersManagementComponent {
   ngOnInit() {
     this.store.loadAll$();
 
-    runInInjectionContext(this.injector, () => {
+    // runInInjectionContext(this.injector, () => {
       effect(() => {
         this.usersCount.set(this.users().length)
         console.log(`Number of users is ${this.usersCount()}`)
-      }, {allowSignalWrites: true})
-    });
+      }, {allowSignalWrites: true, injector: this.injector})
+    // });
   }
 
   onEdit(id: string) {
