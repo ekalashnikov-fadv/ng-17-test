@@ -28,10 +28,9 @@ export class UserComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly timeStore = inject(TimeStore);
+  public readonly store = inject(UsersStore);
 
   private userId: number | undefined
-
-  readonly store = inject(UsersStore);
 
   readonly users: Signal<User[]> = this.store.entities;
 

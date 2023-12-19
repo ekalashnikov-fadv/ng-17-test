@@ -16,7 +16,7 @@ const mockUser: User = {
   id: "1"
 };
 
-fdescribe('UsersStore', () => {
+describe('UsersStore', () => {
   let store: UsersStore
   let httpMock: HttpTestingController;
 
